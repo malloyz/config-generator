@@ -1,7 +1,7 @@
-锘緻echo off
-rem 鏂囦欢瀛樻斁璺緞
+@echo on
+rem 文件存放路径
 set fileStorePath=%cd%/data
-rem excel鏂囦欢鐩綍
+rem excel文件目录
 set excelRootPath=%cd%/excel
 node tools/configObject-generator/generator.js %fileStorePath%/ %excelRootPath% configObject
 pause
