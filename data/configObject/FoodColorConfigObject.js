@@ -1,5 +1,5 @@
 /**
- * Created by malloyzhu on 2016/7/20
+ * Created by malloyzhu on 2016/7/21
  */
 
 var FoodColorConfigObject = cc.Class.extend({

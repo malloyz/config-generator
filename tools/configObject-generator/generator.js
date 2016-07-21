@@ -9,6 +9,7 @@ var util = require("../util/Util.js");
 var fileStorePath = process.argv[2];
 var xlsxRootPath = process.argv[3];
 var configArg = process.argv[4];
+var debugArg = process.argv[5];
 
 var minRow = 2;
 var currentDir = __dirname;
@@ -17,7 +18,7 @@ var configObjectRootPath = path.join(fileStorePath, 'configObject/');
 var structureCodeTemplatePath = path.join(currentDir, 'lib/StructureTemplate.js');
 var getSetCodeTemplatePath = path.join(currentDir, 'lib/GetSetTemplate.js');
 
-var excleName = null;
+var excelName = null;
 var xlsFileList = [];
 var structureCodeTemplate = null;
 var getSetCodeTemplate = null;
@@ -35,22 +36,30 @@ function initCodeTemplate() {
 function generatorConfigObjectCodeFile(excelFilePath) {
     var result = excelFilePath.split(path.sep);
     result = result[result.length - 1].split(".");
-    excleName = result[0];
-    var sheetDatas = xlsx.parse(excelFilePath);
-    for (var i in sheetDatas) {
-        var sheetData = sheetDatas[i];
+    excelName = result[0];
+    var sheetsData = xlsx.parse(excelFilePath);
+    if (0 == sheetsData.length) {
+        console.log("excel have no sheet");
+        return;
+    }
+    for (var i in sheetsData) {
+        var sheetData = sheetsData[i];
         handleSheet(sheetData);
     }
 };
 
 function handleSheet(sheetData) {
     if (sheetData.data.length >= (minRow - 1)) {
+        if (debugArg == 'debug') {
+            console.log(sheetData.data);
+        }
+
         if (configArg == 'configObject') {
             var code = generatorConfigObjectCode(sheetData);
             writeConfigObjectCodeFile(sheetData.name, code);
         }
         var configData = getSheetConfigData(sheetData);
-        writeConfigFile(excleName + '_' + sheetData.name, 'var ' + excleName + '_' + sheetData.name + ' = ' + JSON.stringify(configData, null, 4) + ";");
+        writeConfigFile(excelName + '_' + sheetData.name, 'var ' + excelName + '_' + sheetData.name + ' = ' + JSON.stringify(configData, null, 4) + ";");
     }
 };
 
@@ -158,35 +167,14 @@ function travel(dir, callback) {
 };
 
 function deleteOldFile() {
-    deleteFolderRecursive(configObjectRootPath);
-    deleteFolderRecursive(configRootPath);
-};
-
-function deleteFolderRecursive(dir) {
-    if (fs.existsSync(dir)) {
-        fs.readdirSync(dir).forEach(function (file, index) {
-            var curPath = path.join(dir, file);
-            if (fs.statSync(curPath).isDirectory()) { // recurse
-                deleteFolderRecursive(curPath, fs);
-            } else { // delete file
-                fs.unlinkSync(curPath);
-            }
-        });
-        fs.rmdirSync(dir);
-        return true;
-    }
-    return false;
+    util.deleteFolderRecursive(configObjectRootPath);
+    util.deleteFolderRecursive(configRootPath);
 };
 
 function makeDir() {
-    fs.mkdir(configRootPath, 0777, function (err) {
-        if (err) throw err;
-    });
-
+    util.makeDir(configRootPath);
     if (configArg == 'configObject') {
-        fs.mkdir(configObjectRootPath, 0777, function (err) {
-            if (err) throw err;
-        });
+        util.makeDir(configObjectRootPath);
     }
 };
 

@@ -3,6 +3,7 @@
  */
 
 var fs = require('fs');
+var path = require("path");
 
 /**
  * 获取计算机登录名
@@ -103,3 +104,33 @@ exports.startsWithString = function (str, prefix) {
         return false;
     }
 };
+
+/**
+ * 删除目录
+ * @param dir：目录
+ * @returns {boolean}
+ */
+exports.deleteFolderRecursive = function (dir) {
+    var self = this;
+    if (fs.existsSync(dir)) {
+        fs.readdirSync(dir).forEach(function (file, index) {
+            var curPath = path.join(dir, file);
+            if (fs.statSync(curPath).isDirectory()) { // recurse
+                self.deleteFolderRecursive(curPath);
+            } else { // delete file
+                fs.unlinkSync(curPath);
+            }
+        });
+        fs.rmdirSync(dir);
+        return true;
+    }
+    return false;
+};
+
+
+exports.makeDir = function (path) {
+    fs.mkdir(path, 0777, function (err) {
+        if (err) throw err;
+    });
+};
+
